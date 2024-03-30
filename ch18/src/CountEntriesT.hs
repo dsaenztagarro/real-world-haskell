@@ -10,6 +10,10 @@ import System.FilePath ((</>))
 -- WriterT implements MonadIO, that provides liftIO
 -- liftIO :: MonadIO m => IO a -> m a
 
+-- WriterT implements MonadWriter
+-- :m +Control.Monad.Writer
+-- :i MonadWriter
+
 countEntries :: FilePath -> WriterT [(FilePath, Int)] IO ()
 countEntries path = do
   contents <- liftIO . listDirectory $ path
