@@ -1,7 +1,9 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module UglyStack where
 
 import System.Directory
 import System.FilePath
+import Control.Monad
 import Control.Monad.Reader
 import Control.Monad.State
 
@@ -13,18 +15,20 @@ data AppState = AppState
   { stDeepestReached :: Int
   } deriving (Show)
 
-type App = ReaderT AppConfig (StateT AppState IO)
+newtype MyApp a = MyA
+  { runApp :: ReaderT AppConfig (StateT AppState IO) a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadReader AppConfig, MonadState AppState)
 
 -- In Haskell, the `ReaderT` transformer itself does not have an instance of `MonadState`.
 -- Instead, it relies on the underlying monad (in this case, `IO`) to provide the instance for `MonadState`.
 
-runApp :: App a -> Int -> IO (a, AppState)
-runApp app maxDepth =
+runMyApp :: MyApp a -> Int -> IO (a, AppState)
+runMyApp app maxDepth =
   let config = AppConfig maxDepth
       st = AppState 0
-  in runStateT (runReaderT app config) st
+  in runStateT (runReaderT (runApp app) config) st
 
-constrainedCount :: Int -> FilePath -> App [(FilePath, Int)]
+constrainedCount :: Int -> FilePath -> MyApp [(FilePath, Int)]
 constrainedCount curDepth path = do
   contents <- liftIO . listDirectory $ path
   cfg <- ask

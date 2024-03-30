@@ -28,7 +28,7 @@ main = do
       putStrLn $ show $ runReader LR.localExample "Fred"
 
     ["UglyStack"] -> do
-      tuples <- fst <$> US.runApp (US.constrainedCount 0 dir) 3
+      tuples <- fst <$> US.runMyApp (US.constrainedCount 0 dir) 3
       forM_ tuples $ \(path, count) -> putStrLn $ path <> " " <> show count
 
     _ -> do
